@@ -27,7 +27,7 @@ struct ListView: View {
                 NavigationStack {
                     RecordingView(memos: $memos)
                         .toolbar { 
-                            Button("Cancel") {
+                            Button("Done") {
                                 isRecording = false
                             }
                         }

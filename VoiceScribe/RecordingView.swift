@@ -29,7 +29,6 @@ struct RecordingView: View {
         speechRecognizer.resetTranscript()
         speechRecognizer.startTranscribing()
         isRecording = true
-        
     }
     private func stopRecording() {
         speechRecognizer.stopTranscribing()
