@@ -13,7 +13,6 @@ struct DetailView: View {
     @State private var alertTitle = "Error"
     @State private var alertMessage = "Something went wrong."
 
-
     var body: some View {
         VStack {
             List {
@@ -25,51 +24,42 @@ struct DetailView: View {
                     }
                 }
                 Section(header: Text("Transcript")) {
-                    TranscriptView( transcript: memo.transcript)
+                    TranscriptView(transcript: memo.transcript)
                 }
-                Section(header: Text("Note")) {
-                    Button("Save Memo") {
-                        postMemo(memo: memo)
+                Section(header: Text("AI Stuff")) {
+                    Button("Save Transcript") {
+                        saveMemo()
                     }
+                    .disabled(memo.saveStatus)
                     .alert(isPresented: $showingAlert) {
                         Alert(title: Text(alertTitle), message: Text(alertMessage), dismissButton: .default(Text("OK")))
                     }
+                    Button("Create Note") {
+//                        createNote(memoId: memo.id)
+                    }
+                    .disabled(!memo.saveStatus)
                 }
             }
         }
         .navigationTitle(memo.title)
     }
-    
-    func postMemo(memo: Memo) {
-        let url = URL(string: "https://voice-scribe.jack-attack.workers.dev")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try? JSONEncoder().encode(memo)
 
-        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
-            if let error = error {
-                DispatchQueue.main.async {
+    func saveMemo() {
+        CloudflareWorkerService.shared.postMemo(memo) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    self.memo.saveStatus = true
+                    self.alertTitle = "Success"
+                    self.alertMessage = "Memo successfully saved."
+                    
+                case .failure(let error):
                     self.alertTitle = "Error"
                     self.alertMessage = error.localizedDescription
-                    self.showingAlert = true
                 }
-            } else if let data = data, let response = response as? HTTPURLResponse {
-                let str = String(data: data, encoding: .utf8)
-                DispatchQueue.main.async {
-                    if response.statusCode == 200 {
-                        self.alertTitle = "Success"
-                        self.alertMessage = "Memo successfully saved."
-                    } else {
-                        self.alertTitle = "Failure"
-                        self.alertMessage = "Failed to save memo. Server responded with \(str ?? "unknown error")."
-                    }
-                    self.showingAlert = true
-                }
+                self.showingAlert = true
             }
         }
-        task.resume()
-        
     }
 }
 
