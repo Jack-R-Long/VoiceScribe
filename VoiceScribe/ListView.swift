@@ -10,6 +10,10 @@ import SwiftUI
 struct ListView: View {
     @State private var isRecording = false
     @Binding var memos: [Memo]
+    
+    @Environment(\.scenePhase) private var scenePhase
+    let saveAction: ()-> Void
+    
     var body: some View {
         NavigationStack {
             List($memos) { $memo in
@@ -23,22 +27,26 @@ struct ListView: View {
                     Image(systemName: "plus")
                 }
             }
-            .sheet(isPresented: $isRecording) {
-                NavigationStack {
-                    RecordingView(memos: $memos)
-                        .toolbar { 
-                            Button("Done") {
-                                isRecording = false
-                            }
+        }
+        //TODO - make NewMemoSheet.swift
+        .sheet(isPresented: $isRecording) {
+            NavigationStack {
+                RecordingView(memos: $memos)
+                    .toolbar {
+                        Button("Done") {
+                            isRecording = false
                         }
-                }
+                    }
             }
+        }
+        .onChange(of: scenePhase) { phase in
+            if phase == .inactive {saveAction()}
         }
     }
 }
 
 struct ListView_Previews: PreviewProvider {
     static var previews: some View {
-        ListView(memos: .constant(Memo.sampleData))
+        ListView(memos: .constant(Memo.sampleData), saveAction: {})
     }
 }

@@ -9,10 +9,33 @@ import SwiftUI
 
 @main
 struct VoiceScribeApp: App {
-    @State private var memos = Memo.sampleData
+    @StateObject private var store = MemoStore()
+    @State private var errorWrapper: ErrorWrapper?
+
     var body: some Scene {
         WindowGroup {
-            ListView(memos: $memos)
+            ListView(memos: $store.memos) {
+                Task {
+                    do {
+                        try await store.save(memos: store.memos)
+                    } catch {
+                        errorWrapper = ErrorWrapper(error: error, guidance: "Try again later.")
+                    }
+                }
+            }
+            .task {
+                do {
+                    try await store.load()
+                } catch {
+                    errorWrapper = ErrorWrapper(error: error, guidance: "VoiceScribe will load sample data and continue")
+                }
+            }
+            .sheet(item: $errorWrapper) {
+                store.memos = Memo.sampleData
+                
+            } content: { wrapper in
+                ErrorView(errorWrapper: wrapper)
+            }
         }
     }
 }

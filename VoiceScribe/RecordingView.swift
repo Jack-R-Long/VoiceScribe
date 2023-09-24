@@ -12,6 +12,7 @@ struct RecordingView: View {
     @State private var isRecording = false
     
     @Binding var memos: [Memo]
+
     
     var body: some View {
         VStack {
