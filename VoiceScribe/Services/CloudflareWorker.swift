@@ -8,7 +8,6 @@
 import Foundation
 
 class CloudflareWorkerService {
-    
     static let shared = CloudflareWorkerService()
     private let baseUrl = URL(string: "https://voice-scribe.jack-attack.workers.dev")!
     
@@ -44,6 +43,4 @@ class CloudflareWorkerService {
         }
         task.resume()
     }
-    
-    
 }

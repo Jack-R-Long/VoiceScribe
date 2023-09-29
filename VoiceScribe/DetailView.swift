@@ -9,10 +9,7 @@ import SwiftUI
 
 struct DetailView: View {
     @Binding var memo: Memo
-    @State private var showingAlert = false
-    @State private var alertTitle = "Error"
-    @State private var alertMessage = "Something went wrong."
-
+    
     var body: some View {
         VStack {
             List {
@@ -27,38 +24,18 @@ struct DetailView: View {
                     TranscriptView(transcript: memo.transcript)
                 }
                 Section(header: Text("AI Stuff")) {
-                    Button("Save Transcript") {
-                        saveMemo()
+                    if memo.savedToCloudflare == .saving {
+                        Text("Saving...").foregroundColor(.gray)
+                    } else if memo.savedToCloudflare == .saved {
+                        Text("Saved!").foregroundColor(.green)
+                    } else {
+                        Text("Not Saved!").foregroundColor(.red)
                     }
-                    .disabled(memo.saveStatus)
-                    .alert(isPresented: $showingAlert) {
-                        Alert(title: Text(alertTitle), message: Text(alertMessage), dismissButton: .default(Text("OK")))
-                    }
-                    Button("Create Note") {
-//                        createNote(memoId: memo.id)
-                    }
-                    .disabled(!memo.saveStatus)
-                }
-            }
-        }
-        .navigationTitle(memo.title)
-    }
-
-    func saveMemo() {
-        CloudflareWorkerService.shared.postMemo(memo) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    self.memo.saveStatus = true
-                    self.alertTitle = "Success"
-                    self.alertMessage = "Memo successfully saved."
+                    // CreateAINoteView(memo: $memo)
                     
-                case .failure(let error):
-                    self.alertTitle = "Error"
-                    self.alertMessage = error.localizedDescription
                 }
-                self.showingAlert = true
             }
+            .navigationTitle(memo.title)
         }
     }
 }

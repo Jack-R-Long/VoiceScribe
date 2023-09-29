@@ -10,10 +10,12 @@ import SwiftUI
 struct ListView: View {
     @State private var isRecording = false
     @Binding var memos: [Memo]
-    
+
+    @ObservedObject var alertManager: AlertManager
+
     @Environment(\.scenePhase) private var scenePhase
-    let saveAction: ()-> Void
-    
+    let saveAction: () -> Void
+
     var body: some View {
         NavigationStack {
             List($memos) { $memo in
@@ -28,7 +30,7 @@ struct ListView: View {
                 }
             }
         }
-        //TODO - make NewMemoSheet.swift
+        // TODO: - make NewMemoSheet.swift
         .sheet(isPresented: $isRecording) {
             NavigationStack {
                 RecordingView(memos: $memos)
@@ -40,13 +42,20 @@ struct ListView: View {
             }
         }
         .onChange(of: scenePhase) { phase in
-            if phase == .inactive {saveAction()}
+            if phase == .inactive { saveAction() }
+        }
+        // Alert for CloudFlare memo post
+        .alert(isPresented: $alertManager.showAlert) {
+            Alert(title: Text("Error"),
+                  message: Text(alertManager.alertMessage),
+                  dismissButton: .default(Text("OK")))
         }
     }
 }
 
 struct ListView_Previews: PreviewProvider {
     static var previews: some View {
-        ListView(memos: .constant(Memo.sampleData), saveAction: {})
+        let alertManager = AlertManager()
+        ListView(memos: .constant(Memo.sampleData), alertManager: alertManager, saveAction: {})
     }
 }

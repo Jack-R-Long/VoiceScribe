@@ -10,11 +10,12 @@ import SwiftUI
 @main
 struct VoiceScribeApp: App {
     @StateObject private var store = MemoStore()
+    @StateObject private var alertManager = AlertManager()
     @State private var errorWrapper: ErrorWrapper?
-
+ 
     var body: some Scene {
         WindowGroup {
-            ListView(memos: $store.memos) {
+            ListView(memos: $store.memos, alertManager: alertManager) {
                 Task {
                     do {
                         try await store.save(memos: store.memos)

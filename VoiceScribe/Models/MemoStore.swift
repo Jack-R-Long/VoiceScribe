@@ -16,7 +16,7 @@ class MemoStore: ObservableObject {
                                     in: .userDomainMask,
                                     appropriateFor: nil,
                                     create: false)
-        .appendingPathComponent("scrums.data")
+        .appendingPathComponent("memos.data")
     }
     
     func load() async throws {
