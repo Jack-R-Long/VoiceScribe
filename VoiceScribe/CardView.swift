@@ -16,7 +16,10 @@ struct CardView: View {
                 .accessibilityAddTraits(.isHeader)
             Spacer()
             HStack {
+                Label("\(memo.noteType?.rawValue ?? "N/A")", systemImage: "note")
+                Spacer()
                 Label("\(memo.length)", systemImage: "clock")
+                    .labelStyle(.trailingIcon)
                     .accessibilityLabel("\(memo.length) minute memo")
 
             }
