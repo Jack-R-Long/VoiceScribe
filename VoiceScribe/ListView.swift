@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  ListView.swift
 //  VoiceScribe
 //
 //  Created by Jack long on 8/20/23.
@@ -11,7 +11,7 @@ struct ListView: View {
     @State private var isRecording = false
     @Binding var memos: [Memo]
 
-    @ObservedObject var alertManager: AlertManager
+    @State private var errorPosting = false
 
     @Environment(\.scenePhase) private var scenePhase
     let saveAction: () -> Void
@@ -25,40 +25,13 @@ struct ListView: View {
                     }
                 }
                 .navigationTitle("Memos")
-                HStack(spacing: 50) {
-                    Button(action: {
-                        // Action for audio recording
-                        isRecording = true
-                    }) {
-                        Image(systemName: "mic")
-                            .imageScale(.large)
-                            .padding()
-                            .background(Color.gray.opacity(0.1))
-                            .clipShape(Circle())
-                    }
-
-                    Button(action: {
-                        // Action for taking a picture
-                        print("Camera activated")
-                    }) {
-                        Image(systemName: "camera")
-                            .imageScale(.large)
-                            .padding()
-                            .background(Color.gray.opacity(0.1))
-                            .clipShape(Circle())
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.white.opacity(0.8))
+                NewRecordingButtons(isRecording: $isRecording)
             }
 
-
         }
-        // TODO: - make NewMemoSheet.swift
         .sheet(isPresented: $isRecording) {
             NavigationStack {
-                RecordingView(memos: $memos)
+                RecordingView(memos: $memos, errorPosting: $errorPosting)
                     .toolbar {
                         Button("Done") {
                             isRecording = false
@@ -70,17 +43,14 @@ struct ListView: View {
             if phase == .inactive { saveAction() }
         }
         // Alert for CloudFlare memo post
-        .alert(isPresented: $alertManager.showAlert) {
-            Alert(title: Text("Error"),
-                  message: Text(alertManager.alertMessage),
-                  dismissButton: .default(Text("OK")))
+        .alert(isPresented: $errorPosting) {
+            Alert(title: Text("Error"), message: Text("Error saving memo to cloud"), dismissButton: .default(Text("OK")))
         }
     }
 }
 
 struct ListView_Previews: PreviewProvider {
     static var previews: some View {
-        let alertManager = AlertManager()
-        ListView(memos: .constant(Memo.sampleData), alertManager: alertManager, saveAction: {})
+        ListView(memos: .constant(Memo.sampleData), saveAction: {})
     }
 }

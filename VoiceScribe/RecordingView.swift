@@ -10,9 +10,10 @@ import SwiftUI
 struct RecordingView: View {
     @StateObject var speechRecognizer = SpeechRecognizer()
     @State private var isRecording = false
-    @StateObject var alertManager = AlertManager()
-
+    
     @Binding var memos: [Memo]
+    @Binding var errorPosting: Bool
+
 
     var body: some View {
         VStack {
@@ -49,15 +50,20 @@ struct RecordingView: View {
             switch result {
             case .success:
                 print("Memo successfully posted.")
-                // You can also set newMemo's saveState here, if it exists.
-                // newMemo.saveState = true
-
-                // If needed, you can save the memo locally using the MemoStore's save function
-
+                
+                // Find the index of the memo you've just added
+                if let index = self.memos.firstIndex(where: { $0.id == newMemo.id }) {
+                    // Modify the memo's savedToCloudflare status
+                    self.memos[index].savedToCloudflare = .saved
+                    
+                    // [Optional] Save the updated memos
+                    // try? self?.save(memos: self?.memos ?? [])
+                }
+            
+            // TODO - test error handling / notification
             case .failure(let error):
-                // Update the alert state variables
-                alertManager.alertMessage = "Error posting memo: \(error.localizedDescription)"
-                alertManager.showAlert = true
+                print("Error posting: \(error)")
+                errorPosting = true
             }
         }
     }
@@ -66,7 +72,7 @@ struct RecordingView: View {
 struct RecordingView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            RecordingView(memos: .constant(Memo.sampleData))
+            RecordingView(memos: .constant(Memo.sampleData), errorPosting: .constant(false))
         }
     }
 }
